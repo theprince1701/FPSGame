@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\unrealprojects\\gdw\\fpsgame\\fpsgame\\intermediate\\build\\win64\\unrealeditor\\inc\\fpsgame\\uht\\fpsgameplayercontroller.gen.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\unrealprojects\\gdw\\fpsgame\\fpsgame\\intermediate\\build\\win64\\x64\\fpsgameeditor\\development\\engine\\sharedpch.engine.cpp20.h.pch",
+        "Includes": [
+            "d:\\unrealprojects\\gdw\\fpsgame\\fpsgame\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\fpsgame\\definitions.fpsgame.h",
+            "d:\\unrealprojects\\gdw\\fpsgame\\fpsgame\\source\\fpsgame\\fpsgameplayercontroller.h",
+            "d:\\unrealprojects\\gdw\\fpsgame\\fpsgame\\intermediate\\build\\win64\\unrealeditor\\inc\\fpsgame\\uht\\fpsgameplayercontroller.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

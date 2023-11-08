@@ -1,0 +1,8 @@
+{
+	"SourceFiles": [
+		"D:\\UnrealProjects\\GDW\\FPSGame\\FPSGame\\Source\\FPSGame\\FPSGame.Build.cs",
+		"D:\\UnrealProjects\\GDW\\FPSGame\\FPSGame\\Source\\FPSGame.Target.cs",
+		"D:\\UnrealProjects\\GDW\\FPSGame\\FPSGame\\Source\\FPSGameEditor.Target.cs"
+	],
+	"EngineVersion": "5.3.0"
+}
