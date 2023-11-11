@@ -1,6 +1,12 @@
-D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\FPSGameGameMode.h
 D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\FPSGameCharacter.h
-D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\FPSGamePlayerController.h
-D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\TP_WeaponComponent.h
-D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\TP_PickUpComponent.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\FPSGameGameMode.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\PlayerCamManager.h
 D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\FPSGameProjectile.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\PlayerMovementComponent.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\FPSGamePlayerController.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\TP_PickUpComponent.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\Weapon.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\WeaponController.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\WeaponManager.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\TP_WeaponComponent.h
+D:\UnrealProjects\GDW\FPSGame\FPSGame\Source\FPSGame\BulletShell.h

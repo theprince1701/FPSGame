@@ -1,5 +1,3 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
 #include "FPSGameCharacter.h"
 #include "FPSGameProjectile.h"
 #include "Animation/AnimInstance.h"
@@ -9,28 +7,27 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "PlayerMovementComponent.h"
+#include "WeaponManager.h"
 #include "Engine/LocalPlayer.h"
+#include "Net/UnrealNetwork.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
-//////////////////////////////////////////////////////////////////////////
-// AFPSGameCharacter
+AFPSGameCharacter::AFPSGameCharacter(const FObjectInitializer& ObjectInitializer)
+: Super(ObjectInitializer.SetDefaultSubobjectClass<UPlayerMovementComponent>(ACharacter::CharacterMovementComponentName))
 
-AFPSGameCharacter::AFPSGameCharacter()
 {
-	// Character doesnt have a rifle at start
-	bHasRifle = false;
-	
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-		
-	// Create a CameraComponent	
+
+	WeaponManager = CreateDefaultSubobject<UWeaponManager>(TEXT("WeaponManager"));
+	WeaponController = CreateDefaultSubobject<UWeaponController>(TEXT("WeaponController"));
+
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
@@ -39,14 +36,13 @@ AFPSGameCharacter::AFPSGameCharacter()
 	//Mesh1P->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	Mesh1P->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AFPSGameCharacter::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 
-	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
@@ -54,25 +50,33 @@ void AFPSGameCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-
+	
+	PlayerMovementComponent = Cast<UPlayerMovementComponent>(GetCharacterMovement());
 }
-
-//////////////////////////////////////////////////////////////////////////// Input
 
 void AFPSGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
 	{
-		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
-
-		// Moving
+		
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AFPSGameCharacter::Move);
-
-		// Looking
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::None, this, &AFPSGameCharacter::StopMovement);
+		
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AFPSGameCharacter::Look);
+
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Started, this, &AFPSGameCharacter::CrouchPressed);
+		EnhancedInputComponent->BindAction(CrouchAction, ETriggerEvent::Completed, this, &AFPSGameCharacter::CrouchReleased);
+
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Started, this, &AFPSGameCharacter::SprintPressed);
+		EnhancedInputComponent->BindAction(SprintAction, ETriggerEvent::Completed, this, &AFPSGameCharacter::SprintReleased);
+		
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AFPSGameCharacter::AimPressed);
+		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AFPSGameCharacter::AimReleased);
+
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSGameCharacter::FirePressed);
+		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AFPSGameCharacter::FireReleased);
 	}
 	else
 	{
@@ -80,15 +84,106 @@ void AFPSGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 	}
 }
 
+void AFPSGameCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AFPSGameCharacter, VerticalMovement);
+	DOREPLIFETIME(AFPSGameCharacter, HorizontalMovement);
+	DOREPLIFETIME(AFPSGameCharacter, IsSliding);
+	DOREPLIFETIME(AFPSGameCharacter, IsSprinting);
+	DOREPLIFETIME(AFPSGameCharacter, SlideTimer);
+}
+
+void AFPSGameCharacter::SprintPressed()
+{
+	PlayerMovementComponent->SprintPressed();
+}
+
+void AFPSGameCharacter::SprintReleased()
+{
+	PlayerMovementComponent->SprintReleased();
+}
+
+void AFPSGameCharacter::FirePressed()
+{
+	WeaponController->FirePressed();
+}
+
+void AFPSGameCharacter::FireReleased()
+{
+	WeaponController->FireReleased();
+}
+
+void AFPSGameCharacter::ReloadPressed()
+{
+}
+
+void AFPSGameCharacter::InspectPressed()
+{
+}
+
+void AFPSGameCharacter::AimPressed()
+{
+	WeaponController->AimPressed();
+}
+
+void AFPSGameCharacter::AimReleased()
+{
+	WeaponController->AimReleased();
+}
+
+void AFPSGameCharacter::CrouchPressed()
+{
+	PlayerMovementComponent->CrouchPressed();
+}
+
+void AFPSGameCharacter::CrouchReleased()
+{
+	PlayerMovementComponent->CrouchReleased();
+}
+
+void AFPSGameCharacter::StopMovement()
+{
+	LocalHorizontalMovement = 0.0f;
+	LocalVerticalMovement = 0.0f;
+}
+
+FCollisionQueryParams AFPSGameCharacter::GetIgnoreCharacterParams() const
+{
+	FCollisionQueryParams Params;
+ 
+	TArray<AActor*> CharacterChildren;
+	GetAllChildActors(CharacterChildren);
+	Params.AddIgnoredActors(CharacterChildren);
+	Params.AddIgnoredActor(this);
+
+	return Params;
+}
+
+void AFPSGameCharacter::Server_SetInput_Implementation(float VerticalMove, float HorizontalMove, float VertLook,
+                                                       float HorLook)
+{
+	VerticalMovement =VerticalMove;
+	HorizontalMovement =HorizontalMove;
+
+	VerticalLook = VertLook;
+	HorizontalLook = HorLook;
+}
+
 
 void AFPSGameCharacter::Move(const FInputActionValue& Value)
 {
-	// input is a Vector2D
+	if(IsSliding)
+	{
+		StopMovement();
+		return;
+	}
 	FVector2D MovementVector = Value.Get<FVector2D>();
-
 	if (Controller != nullptr)
 	{
-		// add movement 
+		LocalHorizontalMovement  =MovementVector.X;
+		LocalVerticalMovement = MovementVector.Y;
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
@@ -96,23 +191,24 @@ void AFPSGameCharacter::Move(const FInputActionValue& Value)
 
 void AFPSGameCharacter::Look(const FInputActionValue& Value)
 {
-	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		// add yaw and pitch input to controller
+		LocalHorizontalLook = LookAxisVector.X;
+		LocalVerticalLook = LookAxisVector.Y;
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
 }
 
-void AFPSGameCharacter::SetHasRifle(bool bNewHasRifle)
+void AFPSGameCharacter::Tick(float DeltaSeconds)
 {
-	bHasRifle = bNewHasRifle;
+	Super::Tick(DeltaSeconds);
+
+	if(IsLocallyControlled())
+	{
+		Server_SetInput(LocalVerticalMovement, LocalHorizontalMovement, LocalVerticalLook, LocalHorizontalLook);
+	}
 }
 
-bool AFPSGameCharacter::GetHasRifle()
-{
-	return bHasRifle;
-}

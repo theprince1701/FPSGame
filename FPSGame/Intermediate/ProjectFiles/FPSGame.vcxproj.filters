@@ -11,6 +11,7 @@
     <None Include="..\..\Source\FPSGameEditor.Target.cs">
       <Filter>Source</Filter>
     </None>
+    <None Include="..\..\.vsconfig" />
     <Filter Include="Config">
       <UniqueIdentifier>{FA535FFB-25E1-3D20-B416-52F9BE21E06E}</UniqueIdentifier>
     </Filter>
@@ -32,6 +33,12 @@
     <Filter Include="Source\FPSGame">
       <UniqueIdentifier>{C184ABA4-8055-35C1-A7F2-55D42CE53013}</UniqueIdentifier>
     </Filter>
+    <ClCompile Include="..\..\Source\FPSGame\BulletShell.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\BulletShell.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
     <None Include="..\..\Source\FPSGame\FPSGame.Build.cs">
       <Filter>Source\FPSGame</Filter>
     </None>
@@ -65,6 +72,18 @@
     <ClInclude Include="..\..\Source\FPSGame\FPSGameProjectile.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\PlayerCamManager.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\PlayerCamManager.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\PlayerMovementComponent.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\PlayerMovementComponent.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
     <ClCompile Include="..\..\Source\FPSGame\TP_PickUpComponent.cpp">
       <Filter>Source\FPSGame</Filter>
     </ClCompile>
@@ -75,6 +94,24 @@
       <Filter>Source\FPSGame</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\FPSGame\TP_WeaponComponent.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\Weapon.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\Weapon.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\WeaponController.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\WeaponController.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\WeaponManager.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\WeaponManager.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
   </ItemGroup>

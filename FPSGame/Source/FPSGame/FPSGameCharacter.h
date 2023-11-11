@@ -3,10 +3,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "WeaponController.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
 #include "FPSGameCharacter.generated.h"
 
+class UWeaponManager;
 class UInputComponent;
 class USkeletalMeshComponent;
 class UCameraComponent;
@@ -20,68 +22,120 @@ UCLASS(config=Game)
 class AFPSGameCharacter : public ACharacter
 {
 	GENERATED_BODY()
-
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
-	USkeletalMeshComponent* Mesh1P;
-
-	/** First person camera */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
-	/** MappingContext */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputMappingContext* DefaultMappingContext;
 
-	/** Jump Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* JumpAction;
 
-	/** Move Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
 	UInputAction* MoveAction;
 	
-public:
-	AFPSGameCharacter();
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* SprintAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* CrouchAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* AimAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* ReloadAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* InspectAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category=Input, meta=(AllowPrivateAccess = "true"))
+	UInputAction* FireAction;
+
+public:
+	AFPSGameCharacter(const FObjectInitializer& ObjectInitializer);
+
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	float VerticalMovement;
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	float HorizontalMovement;
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	float VerticalLook;
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	float HorizontalLook;
+	
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool IsSliding;
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	float SlideTimer;
+	UPROPERTY(Replicated, BlueprintReadOnly)
+	bool IsSprinting;
+
+
+	UPROPERTY(BlueprintReadOnly)
+	float LocalVerticalMovement;
+	UPROPERTY(BlueprintReadOnly)
+	float LocalHorizontalMovement;
+	UPROPERTY(BlueprintReadOnly)
+	float LocalHorizontalLook;
+	UPROPERTY(BlueprintReadOnly)
+	float LocalVerticalLook;
+	
 protected:
 	virtual void BeginPlay();
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category=Movement)
+	class UPlayerMovementComponent* PlayerMovementComponent;
+
 public:
-		
-	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapons, meta = (AllowPrivateAccess = "true"))
+	UWeaponController* WeaponController;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapons, meta = (AllowPrivateAccess = "true"))
+	UWeaponManager* WeaponManager;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category=Mesh)
+	USkeletalMeshComponent* Mesh1P;
 
-	/** Bool for AnimBP to switch to another animation set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Weapon)
-	bool bHasRifle;
-
-	/** Setter to set the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	void SetHasRifle(bool bNewHasRifle);
-
-	/** Getter for the bool */
-	UFUNCTION(BlueprintCallable, Category = Weapon)
-	bool GetHasRifle();
 
 protected:
-	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
-
-	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
+	virtual void Tick(float DeltaSeconds) override;
 
-protected:
-	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
-	// End of APawn interface
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	UFUNCTION(Server, Unreliable)
+	void Server_SetInput(float VerticalMove, float HorizontalMove, float VertLook, float HorLook);
+
+private:
+	void SprintPressed();
+	void SprintReleased();
+
+	void FirePressed();
+	void FireReleased();
+
+	void ReloadPressed();
+	void InspectPressed();
+	
+	void AimPressed();
+	void AimReleased();
+	
+	void CrouchPressed();
+	void CrouchReleased();
+
+	void StopMovement();
 
 public:
-	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
-	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	FCollisionQueryParams GetIgnoreCharacterParams() const;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSlideStart();
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnSlideEnd();
 };
 
