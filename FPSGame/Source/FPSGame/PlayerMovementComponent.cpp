@@ -262,6 +262,7 @@ void UPlayerMovementComponent::PhysSlide(float DeltaTime, int32 Iterations)
 		return;
 	}
 
+	PhysicsRotation(DeltaTime);
 	RestorePreAdditiveRootMotionVelocity();
 
 	FHitResult SurfaceHit;

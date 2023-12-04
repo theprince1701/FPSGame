@@ -39,6 +39,24 @@
     <ClInclude Include="..\..\Source\FPSGame\BulletShell.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\CrosshairWidget.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\CrosshairWidget.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\Door.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\Door.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\FootstepAudio.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\FootstepAudio.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
     <None Include="..\..\Source\FPSGame\FPSGame.Build.cs">
       <Filter>Source\FPSGame</Filter>
     </None>
@@ -60,6 +78,12 @@
     <ClInclude Include="..\..\Source\FPSGame\FPSGameGameMode.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\FPSGameInstance.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\FPSGameInstance.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
     <ClCompile Include="..\..\Source\FPSGame\FPSGamePlayerController.cpp">
       <Filter>Source\FPSGame</Filter>
     </ClCompile>
@@ -72,16 +96,76 @@
     <ClInclude Include="..\..\Source\FPSGame\FPSGameProjectile.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\FPSGameState.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\FPSGameState.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\FPSPlayerState.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\FPSPlayerState.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\GameHUD.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\GameHUD.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\ItemData.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\ItemData.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
     <ClCompile Include="..\..\Source\FPSGame\PlayerCamManager.cpp">
       <Filter>Source\FPSGame</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\FPSGame\PlayerCamManager.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\PlayerHealthComponent.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\PlayerHealthComponent.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
     <ClCompile Include="..\..\Source\FPSGame\PlayerMovementComponent.cpp">
       <Filter>Source\FPSGame</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\FPSGame\PlayerMovementComponent.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\PlayerSpawnPoint.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\PlayerSpawnPoint.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\Projectile.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\Projectile.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\SpawnPoint.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\SpawnPoint.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\Spectator.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\Spectator.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\ThirdPersonWeapon.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\ThirdPersonWeapon.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
     <ClCompile Include="..\..\Source\FPSGame\TP_PickUpComponent.cpp">
@@ -106,6 +190,12 @@
       <Filter>Source\FPSGame</Filter>
     </ClCompile>
     <ClInclude Include="..\..\Source\FPSGame\WeaponController.h">
+      <Filter>Source\FPSGame</Filter>
+    </ClInclude>
+    <ClCompile Include="..\..\Source\FPSGame\WeaponData.cpp">
+      <Filter>Source\FPSGame</Filter>
+    </ClCompile>
+    <ClInclude Include="..\..\Source\FPSGame\WeaponData.h">
       <Filter>Source\FPSGame</Filter>
     </ClInclude>
     <ClCompile Include="..\..\Source\FPSGame\WeaponManager.cpp">

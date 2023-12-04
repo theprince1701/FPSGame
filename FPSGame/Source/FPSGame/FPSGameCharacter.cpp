@@ -6,6 +6,10 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "FPSGameGameMode.h"
+#include "FPSGamePlayerController.h"
+#include "FPSGameState.h"
+#include "GameHUD.h"
 #include "InputActionValue.h"
 #include "PlayerMovementComponent.h"
 #include "WeaponManager.h"
@@ -20,11 +24,17 @@ AFPSGameCharacter::AFPSGameCharacter(const FObjectInitializer& ObjectInitializer
 {
 	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
 
+	HealthComponent = CreateDefaultSubobject<UPlayerHealthComponent>(TEXT("HealthComponent"));
 	WeaponManager = CreateDefaultSubobject<UWeaponManager>(TEXT("WeaponManager"));
 	WeaponController = CreateDefaultSubobject<UWeaponController>(TEXT("WeaponController"));
 
+	LeanComponent = CreateDefaultSubobject<USceneComponent>(TEXT("LeanComponent"));
+	LeanComponent->SetupAttachment(GetCapsuleComponent());
+	RecoilComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RecoilComponent"));
+	RecoilComponent->SetupAttachment(LeanComponent);
+	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
+	FirstPersonCameraComponent->SetupAttachment(RecoilComponent);
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
@@ -50,8 +60,22 @@ void AFPSGameCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
+
+	PC = Cast<AFPSGamePlayerController>(GetController());
+	FPSGameState =	 Cast<AFPSGameState>(GetWorld()->GetGameState());
 	PlayerMovementComponent = Cast<UPlayerMovementComponent>(GetCharacterMovement());
+
+	if(IsLocallyControlled())
+	{
+		AFPSGamePlayerController* LocalPC = Cast<AFPSGamePlayerController>(GetController());
+		if(const AGameHUD* GameHUD = Cast<AGameHUD>(LocalPC->GetHUD()))
+		{
+			GameHUD->PlayerHUD->AddToViewport();
+			GameHUD->CrossHairWidget->AddToViewport();
+			GameHUD->DeathWidget->RemoveFromParent();
+		}
+	}
 }
 
 void AFPSGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -75,6 +99,17 @@ void AFPSGameCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCo
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Started, this, &AFPSGameCharacter::AimPressed);
 		EnhancedInputComponent->BindAction(AimAction, ETriggerEvent::Completed, this, &AFPSGameCharacter::AimReleased);
 
+		EnhancedInputComponent->BindAction(ReloadAction, ETriggerEvent::Triggered, this, &AFPSGameCharacter::ReloadPressed);
+		EnhancedInputComponent->BindAction(InspectAction, ETriggerEvent::Triggered, this, &AFPSGameCharacter::InspectPressed);
+		EnhancedInputComponent->BindAction(SwapWeaponsAction, ETriggerEvent::Triggered, this, &AFPSGameCharacter::OnSwapWeaponsPressed);
+
+		
+		EnhancedInputComponent->BindAction(LeanLeft, ETriggerEvent::Started, this, &AFPSGameCharacter::OnLeanLeftPressed);
+		EnhancedInputComponent->BindAction(LeanRight, ETriggerEvent::Started, this, &AFPSGameCharacter::OnLeanRightPressed);
+		EnhancedInputComponent->BindAction(LeanRight, ETriggerEvent::Completed, this, &AFPSGameCharacter::ResetLean);
+		EnhancedInputComponent->BindAction(LeanLeft, ETriggerEvent::Completed, this, &AFPSGameCharacter::ResetLean);
+
+
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Started, this, &AFPSGameCharacter::FirePressed);
 		EnhancedInputComponent->BindAction(FireAction, ETriggerEvent::Completed, this, &AFPSGameCharacter::FireReleased);
 	}
@@ -90,56 +125,127 @@ void AFPSGameCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& Ou
 
 	DOREPLIFETIME(AFPSGameCharacter, VerticalMovement);
 	DOREPLIFETIME(AFPSGameCharacter, HorizontalMovement);
+	DOREPLIFETIME(AFPSGameCharacter, VerticalLook);
+	DOREPLIFETIME(AFPSGameCharacter, HorizontalLook);
 	DOREPLIFETIME(AFPSGameCharacter, IsSliding);
 	DOREPLIFETIME(AFPSGameCharacter, IsSprinting);
 	DOREPLIFETIME(AFPSGameCharacter, SlideTimer);
+	DOREPLIFETIME(AFPSGameCharacter, CameraRot);
 }
 
 void AFPSGameCharacter::SprintPressed()
 {
+	if(PC && PC->bPaused || !FPSGameState->bCanInteract)
+	{
+		return;
+	}
+	
 	PlayerMovementComponent->SprintPressed();
 }
 
 void AFPSGameCharacter::SprintReleased()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
 	PlayerMovementComponent->SprintReleased();
 }
 
 void AFPSGameCharacter::FirePressed()
 {
+	if(PC && PC->bPaused || !FPSGameState->bCanInteract)
+	{
+		return;
+	}
+	
 	WeaponController->FirePressed();
 }
 
 void AFPSGameCharacter::FireReleased()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
 	WeaponController->FireReleased();
 }
 
 void AFPSGameCharacter::ReloadPressed()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
+	WeaponController->ReloadPressed();
 }
 
 void AFPSGameCharacter::InspectPressed()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
+	WeaponController->InspectPressed();
 }
 
 void AFPSGameCharacter::AimPressed()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
 	WeaponController->AimPressed();
 }
 
 void AFPSGameCharacter::AimReleased()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
 	WeaponController->AimReleased();
+}
+
+void AFPSGameCharacter::OnLeanLeftPressed()
+{
+	LocalHorizontalLook  = -90;
+
+}
+
+void AFPSGameCharacter::OnLeanRightPressed()
+{
+	LocalHorizontalLook = 90;
+}
+
+void AFPSGameCharacter::ResetLean()
+{
+	LocalHorizontalLook = 0;
 }
 
 void AFPSGameCharacter::CrouchPressed()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
 	PlayerMovementComponent->CrouchPressed();
 }
 
 void AFPSGameCharacter::CrouchReleased()
 {
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
 	PlayerMovementComponent->CrouchReleased();
 }
 
@@ -147,6 +253,16 @@ void AFPSGameCharacter::StopMovement()
 {
 	LocalHorizontalMovement = 0.0f;
 	LocalVerticalMovement = 0.0f;
+}
+
+void AFPSGameCharacter::OnSwapWeaponsPressed()
+{
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+	
+//	WeaponManager->IncrementCurrentWeapon();
 }
 
 FCollisionQueryParams AFPSGameCharacter::GetIgnoreCharacterParams() const
@@ -162,28 +278,36 @@ FCollisionQueryParams AFPSGameCharacter::GetIgnoreCharacterParams() const
 }
 
 void AFPSGameCharacter::Server_SetInput_Implementation(float VerticalMove, float HorizontalMove, float VertLook,
-                                                       float HorLook)
+                                                       float HorLook,FRotator CameraRotation)
 {
-	VerticalMovement =VerticalMove;
-	HorizontalMovement =HorizontalMove;
+	VerticalMovement = VerticalMove;
+	HorizontalMovement = HorizontalMove;
 
 	VerticalLook = VertLook;
-	HorizontalLook = HorLook;
+	ServerHorizontalLook = HorLook;
+	CameraRot = CameraRotation;
 }
 
 
 void AFPSGameCharacter::Move(const FInputActionValue& Value)
 {
-	if(IsSliding)
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+
+	if(IsSliding || !FPSGameState->bCanInteract)
 	{
 		StopMovement();
 		return;
 	}
+	
+	
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	if (Controller != nullptr)
 	{
-		LocalHorizontalMovement  =MovementVector.X;
 		LocalVerticalMovement = MovementVector.Y;
+		LocalHorizontalMovement = MovementVector.X;
 		AddMovementInput(GetActorForwardVector(), MovementVector.Y);
 		AddMovementInput(GetActorRightVector(), MovementVector.X);
 	}
@@ -191,14 +315,29 @@ void AFPSGameCharacter::Move(const FInputActionValue& Value)
 
 void AFPSGameCharacter::Look(const FInputActionValue& Value)
 {
+	if(!PC)
+	{
+		PC =	Cast<AFPSGamePlayerController>(GetController());
+	}
+	if(PC && PC->bPaused)
+	{
+		return;
+	}
+
+	
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
-		LocalHorizontalLook = LookAxisVector.X;
-		LocalVerticalLook = LookAxisVector.Y;
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
+		float Sensitvity = (WeaponController->GetIsAiming() ? 0.5f : 1.0f) * PC->MouseSensitivity;
+		LocalVerticalLook -= LookAxisVector.Y * 3.0f;
+		LocalVerticalLook = FMath::Clamp(LocalVerticalLook, -90, 90);
+
+		LocalVerticalLookNonAdditive = LookAxisVector.Y;
+		LocalHorizontalLookNonAdditive = LookAxisVector.X;
+
+		AddControllerYawInput(LookAxisVector.X * Sensitvity);
+		AddControllerPitchInput(LookAxisVector.Y * Sensitvity);
 	}
 }
 
@@ -208,7 +347,37 @@ void AFPSGameCharacter::Tick(float DeltaSeconds)
 
 	if(IsLocallyControlled())
 	{
-		Server_SetInput(LocalVerticalMovement, LocalHorizontalMovement, LocalVerticalLook, LocalHorizontalLook);
+		FRotator CameraRotation = FirstPersonCameraComponent->GetComponentRotation();
+	//	UE_LOG(LogTemp, Warning, TEXT("Camera Rotation: %s"), *CameraRotation.ToString());
+		Server_SetInput(LocalVerticalMovement, LocalHorizontalMovement, CameraRotation.Pitch, LocalHorizontalLook, FirstPersonCameraComponent->GetComponentRotation());
+		/*/
+		LocalHorizontalLookSmoothed = FMath::Lerp(LocalHorizontalLookSmoothed, LocalHorizontalLook, DeltaSeconds *LeanSpeed);
+
+		FRotator LeanRotation = FRotator(0, 0, LocalHorizontalLookSmoothed * LeanAmount);
+		CurrentLeanRotation = FMath::Lerp(CurrentLeanRotation, LeanRotation, DeltaSeconds *LeanSpeed);
+		LeanComponent->SetRelativeRotation(CurrentLeanRotation);
+		/*/
+	}
+
+	if(HasAuthority())
+	{
+		HorizontalLook = FMath::Lerp(HorizontalLook, ServerHorizontalLook, DeltaSeconds * LeanSpeed);
+	}
+}
+
+void AFPSGameCharacter::OnRep_Controller()
+{
+	Super::OnRep_Controller();
+
+	if(IsLocallyControlled())
+	{
+		AFPSGamePlayerController* LocalPC = Cast<AFPSGamePlayerController>(GetController());
+		if(const AGameHUD* GameHUD = Cast<AGameHUD>(LocalPC->GetHUD()))
+		{
+			GameHUD->PlayerHUD->AddToViewport();
+			GameHUD->CrossHairWidget->AddToViewport();
+			GameHUD->DeathWidget->RemoveFromParent();
+		}
 	}
 }
 
